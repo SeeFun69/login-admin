@@ -12,13 +12,5 @@ public class UsersResponseDTO {
     private String name;
     private String email;
     private String password;
-
-//    @Override
-//    public String toString() {
-//        return "UsersResponseDTO{" +
-//                "userId=" + userId +
-//                ", username='" + username + '\'' +
-//                ", password='" + password + '\'' +
-//                '}';
-//    }
+    private String role;
 }

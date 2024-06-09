@@ -5,11 +5,10 @@ import com.example.login_administrator.dto.UserDto;
 import com.example.login_administrator.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping(value = "/v1/auth")
@@ -17,9 +16,9 @@ public class AuthController {
     @Autowired
     AuthService authService;
 
-    @PostMapping("/register")
-    ResponseEntity<Object> register(@Valid @RequestBody UserDto userDto){
-        return authService.registerUser(userDto);
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<Object> register(@Valid @RequestPart UserDto userDto, @RequestPart("image") MultipartFile image){
+        return authService.registerUser(userDto, image);
     }
 
     @PostMapping(value = "/login")

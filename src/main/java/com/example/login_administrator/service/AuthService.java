@@ -13,6 +13,7 @@ import com.example.login_administrator.utils.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,7 +22,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -47,7 +54,10 @@ public class AuthService {
     @Autowired
     ModelMapper modelMapper;
 
-    public ResponseEntity<Object> registerUser(UserDto userDto) {
+    @Value("${upload.directory}")
+    private String uploadDirectory;
+
+    public ResponseEntity<Object> registerUser(UserDto userDto, MultipartFile image) {
         if (Boolean.TRUE.equals(userRepository.existsByEmail(userDto.getEmail()))) {
             return Response.build(Response.exist("User", "email", userDto.getEmail()), null, null, HttpStatus.BAD_REQUEST);
         }
@@ -69,6 +79,18 @@ public class AuthService {
         roles.add(userRole.get());
 
         user.setRoles(roles);
+
+        if (image != null && !image.isEmpty()) {
+            try {
+                byte[] bytes = image.getBytes();
+                Path path = Paths.get(uploadDirectory + File.separator + image.getOriginalFilename());
+                Files.write(path, bytes);
+                user.setImagePath(path.toString());
+            } catch (IOException e) {
+                log.error("Failed to upload image", e);
+                return Response.build("Failed to upload image", null, null, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
         userRepository.save(user);
 
         UserDto userNoPasswordDto = UserDto.builder()
